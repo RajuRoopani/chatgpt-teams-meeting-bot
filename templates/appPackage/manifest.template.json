@@ -64,10 +64,6 @@
              "resourceSpecific": [ {
                  "name": "OnlineMeeting.ReadBasic.Chat",
                   "type": "Application"
-                },
-                {
-                    "name":"OnlineMeetingTranscript.Read.All",
-                    "type":"Application"
                 }
             ]
         }

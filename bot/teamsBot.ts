@@ -35,12 +35,13 @@ export class TeamsBot extends TeamsActivityHandler {
         var result = await graphHelper.GetMeetingTranscriptionsAsync(meetingDetails.details.msGraphResourceId);
         console.log(result);
         if(result) {
-          let txt = "Can you please create meeting summary for the following transcript and create action items?\n" + result;
+          let txt = result.activity.text;
           const removedMentionText = TurnContext.removeRecipientMention(context.activity);
           if (removedMentionText) {
             // Remove the line break
             txt = removedMentionText.toLowerCase().replace(/\n|\r/g, "").trim();
           }
+          txt = "Can you please create meeting summary for the following transcript and create action items?\n" + result;
           const openai = new OpenAIApi(configuration);
     
           const response = await openai.createCompletion({
