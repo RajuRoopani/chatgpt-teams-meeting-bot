@@ -12,6 +12,7 @@ import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import { Configuration, OpenAIApi } from "openai";
 import config from "./config";
 import GraphHelper from "./helpers/graphHelper.js"
+import FoundryChatGPTHelper from "./helpers/FoundryChatGPTHelper.js"
 
 
 export class TeamsBot extends TeamsActivityHandler {
@@ -20,7 +21,7 @@ export class TeamsBot extends TeamsActivityHandler {
 
     const configuration = new Configuration({
       apiKey: config.openaiApiKey,
-      organization: config.organization
+      organization: config.organization,
     });
     
     const openai = new OpenAIApi(configuration);
@@ -35,23 +36,25 @@ export class TeamsBot extends TeamsActivityHandler {
         var result = await graphHelper.GetMeetingTranscriptionsAsync(meetingDetails.details.msGraphResourceId);
         console.log(result);
         if(result) {
-          let txt = result.activity.text;
-          const removedMentionText = TurnContext.removeRecipientMention(context.activity);
-          if (removedMentionText) {
-            // Remove the line break
-            txt = removedMentionText.toLowerCase().replace(/\n|\r/g, "").trim();
+          const txt = "Can you please create meeting summary for the following transcript and create action items?\n" + result;
+          if(config.useFoundry == "true") {
+            const foundryHelper = new FoundryChatGPTHelper();
+            const response = await foundryHelper.SubmitPost(txt);
+            await context.sendActivity(response);
+
+          } else {
+            const openai = new OpenAIApi(configuration);
+    
+            const response = await openai.createCompletion({
+              model: "text-davinci-003",
+              prompt: txt,
+              temperature: 0,
+              max_tokens: 2048,
+            });
+      
+            await context.sendActivity(response.data.choices[0].text);
           }
-          txt = "Can you please create meeting summary for the following transcript and create action items?\n" + result;
-          const openai = new OpenAIApi(configuration);
-    
-          const response = await openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: txt,
-            temperature: 0,
-            max_tokens: 2048,
-          });
-    
-          await context.sendActivity(response.data.choices[0].text);
+          
           
         } else {
           await context.sendActivity("No transcript available!");
