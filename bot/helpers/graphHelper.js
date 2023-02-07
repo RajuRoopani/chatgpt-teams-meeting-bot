@@ -5,6 +5,10 @@ class GraphHelper {
     constructor() {
         this._token = this.GetAccessToken();
     }
+    
+    GetToken() {
+        return this._token;
+    }
 
     /**
      * Gets application token.

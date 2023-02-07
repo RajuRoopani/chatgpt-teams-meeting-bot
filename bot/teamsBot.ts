@@ -66,6 +66,16 @@ export class TeamsBot extends TeamsActivityHandler {
             // Remove the line break
             txt = removedMentionText.toLowerCase().replace(/\n|\r/g, "").trim();
           }
+
+          if(config.useFoundry == "true") {
+            const foundryHelper = new FoundryChatGPTHelper();
+            const graphToken =await new GraphHelper().GetToken();
+            console.log(graphToken);
+            const response = await foundryHelper.SubmitPost(txt);
+            await context.sendActivity(response);
+
+          } else {
+
           const openai = new OpenAIApi(configuration);
     
           const response = await openai.createCompletion({
@@ -74,8 +84,8 @@ export class TeamsBot extends TeamsActivityHandler {
             temperature: 0,
             max_tokens: 2048,
           });
-    
           await context.sendActivity(response.data.choices[0].text);
+        }
       }
 
       // By calling next() you ensure that the next BotHandler is run.
